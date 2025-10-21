@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Emotion Detection - Real-time Text Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2.0">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                </svg>
+                <h1>AI Emotion Detector</h1>
+            </div>
+            <p class="subtitle">Real-time emotion analysis using Machine Learning & NLP</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Mode Selection -->
+            <section class="mode-selection">
+                <div class="card">
+                    <h2 class="section-title">Choose Detection Mode</h2>
+                    <div class="mode-tabs">
+                        <button class="mode-tab active" data-mode="text">
+                            <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 6h16M4 12h16M4 18h7"></path>
+                            </svg>
+                            <span>Text Analysis</span>
+                        </button>
+                        <button class="mode-tab" data-mode="face">
+                            <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                            </svg>
+                            <span>Facial Expression</span>
+                        </button>
+                        <button class="mode-tab" data-mode="speech" disabled>
+                            <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                            <span>Speech (Coming Soon)</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Text Input Section -->
+            <section class="input-section mode-content" id="textMode">
+                <div class="card">
+                    <h2 class="section-title">Enter Your Text</h2>
+                    <textarea 
+                        id="textInput" 
+                        class="text-input" 
+                        placeholder="Type or paste your text here to analyze emotions... (e.g., 'I am so happy and excited about this amazing day!')"
+                        rows="6"
+                        maxlength="5000"
+                    ></textarea>
+                    <div class="input-footer">
+                        <span class="char-count" id="charCount">0 / 5000 characters</span>
+                        <button id="analyzeBtn" class="btn btn-primary">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            Analyze Emotion
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Facial Expression Section -->
+            <section class="input-section mode-content" id="faceMode" style="display: none;">
+                <div class="card">
+                    <h2 class="section-title">Capture Your Facial Expression</h2>
+                    <div class="camera-container">
+                        <video id="videoElement" class="camera-feed" autoplay playsinline></video>
+                        <canvas id="canvasElement" style="display: none;"></canvas>
+                        <div class="camera-overlay" id="cameraOverlay">
+                            <svg class="camera-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
+                            <p>Click "Start Camera" to begin</p>
+                        </div>
+                    </div>
+                    <div class="input-footer">
+                        <button id="startCameraBtn" class="btn btn-secondary">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
+                            Start Camera
+                        </button>
+                        <button id="captureBtn" class="btn btn-primary" style="display: none;">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 6v6l4 2"></path>
+                            </svg>
+                            Capture & Analyze
+                        </button>
+                        <button id="stopCameraBtn" class="btn btn-danger" style="display: none;">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="6" y="6" width="12" height="12"></rect>
+                            </svg>
+                            Stop Camera
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="card">
+                    <h2 class="section-title">Analysis Results</h2>
+                    
+                    <!-- Main Emotion Display -->
+                    <div class="main-result" id="mainResult">
+                        <div class="emotion-icon" id="emotionIcon">😊</div>
+                        <div class="emotion-info">
+                            <h3 class="emotion-name" id="emotionName">Happy</h3>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="confidenceFill" style="width: 0%"></div>
+                            </div>
+                            <p class="confidence-text" id="confidenceText">Confidence: 0%</p>
+                        </div>
+                    </div>
+
+                    <!-- All Emotions Breakdown -->
+                    <div class="emotions-breakdown">
+                        <h3 class="breakdown-title">Emotion Breakdown</h3>
+                        <div id="emotionsChart" class="emotions-chart"></div>
+                    </div>
+
+                    <!-- Sentiment Analysis -->
+                    <div class="sentiment-info">
+                        <h3 class="breakdown-title">Sentiment Analysis</h3>
+                        <div class="sentiment-grid">
+                            <div class="sentiment-item">
+                                <span class="sentiment-label">Polarity:</span>
+                                <span class="sentiment-value" id="polarityValue">0.0</span>
+                                <span class="sentiment-desc">(Negative ← → Positive)</span>
+                            </div>
+                            <div class="sentiment-item">
+                                <span class="sentiment-label">Subjectivity:</span>
+                                <span class="sentiment-value" id="subjectivityValue">0.0</span>
+                                <span class="sentiment-desc">(Objective ← → Subjective)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section class="stats-section">
+                <div class="card">
+                    <h2 class="section-title">Statistics</h2>
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalDetections">0</div>
+                            <div class="stat-label">Total Analyses</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section class="history-section">
+                <div class="card">
+                    <h2 class="section-title">Recent History</h2>
+                    <div id="historyList" class="history-list">
+                        <p class="empty-state">No analysis history yet. Start by analyzing some text!</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with Flask, Python, NLP & Machine Learning | © 2025 AI Emotion Detection</p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Analyzing emotions...</p>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

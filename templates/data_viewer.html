@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Viewer - AI Emotion Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2.0">
+    <style>
+        .data-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .emotion-chart {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        
+        .emotion-bar {
+            margin: 1rem 0;
+        }
+        
+        .emotion-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .emotion-bar-fill {
+            height: 30px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 6px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .records-table {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: var(--bg-tertiary);
+            padding: 1rem 1.5rem;
+            display: grid;
+            grid-template-columns: 60px 100px 150px 100px 1fr 180px;
+            gap: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        
+        .table-row {
+            padding: 1rem 1.5rem;
+            display: grid;
+            grid-template-columns: 60px 100px 150px 100px 1fr 180px;
+            gap: 1rem;
+            border-top: 1px solid var(--border);
+            align-items: center;
+        }
+        
+        .table-row:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .emotion-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+        }
+        
+        .type-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .type-text {
+            background: var(--info);
+            color: white;
+        }
+        
+        .type-face {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .back-button:hover {
+            background: var(--bg-tertiary);
+            transform: translateX(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="data-container">
+        <a href="/" class="back-button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to App
+        </a>
+        
+        <h1 style="margin-bottom: 2rem;">📊 Database Viewer</h1>
+        
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Records</div>
+                <div class="stat-value" id="totalRecords">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Database Size</div>
+                <div class="stat-value" id="dbSize">0 MB</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Text Analyses</div>
+                <div class="stat-value" id="textCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Facial Analyses</div>
+                <div class="stat-value" id="faceCount">0</div>
+            </div>
+        </div>
+        
+        <!-- Emotion Chart -->
+        <div class="emotion-chart">
+            <h2 style="margin-bottom: 1.5rem;">Emotion Distribution</h2>
+            <div id="emotionBars"></div>
+        </div>
+        
+        <!-- Records Table -->
+        <div class="records-table">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border);">
+                <h2 style="margin: 0;">Recent Detections</h2>
+            </div>
+            <div class="table-header">
+                <div>ID</div>
+                <div>Type</div>
+                <div>Emotion</div>
+                <div>Confidence</div>
+                <div>Text/Description</div>
+                <div>Timestamp</div>
+            </div>
+            <div id="recordsList"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Fetch and display data
+        async function loadData() {
+            try {
+                // Get database info
+                const dbInfo = await fetch('/api/database-info').then(r => r.json());
+                document.getElementById('totalRecords').textContent = dbInfo.database.total_records;
+                document.getElementById('dbSize').textContent = dbInfo.database.size_mb + ' MB';
+                
+                // Get statistics
+                const stats = await fetch('/api/stats').then(r => r.json());
+                document.getElementById('textCount').textContent = stats.stats.by_type?.text || 0;
+                document.getElementById('faceCount').textContent = stats.stats.by_type?.face || 0;
+                
+                // Display emotion chart
+                displayEmotionChart(stats.stats.emotions);
+                
+                // Get history
+                const history = await fetch('/api/history?limit=50').then(r => r.json());
+                displayRecords(history.history);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+        
+        function displayEmotionChart(emotions) {
+            const container = document.getElementById('emotionBars');
+            const total = Object.values(emotions).reduce((a, b) => a + b, 0);
+            
+            const emotionColors = {
+                happy: '#fbbf24', sad: '#60a5fa', angry: '#ef4444',
+                fear: '#a78bfa', surprise: '#f97316', neutral: '#9ca3af',
+                disgust: '#84cc16', confused: '#f59e0b', tired: '#6b7280',
+                excited: '#ec4899', bored: '#64748b', anxious: '#8b5cf6',
+                calm: '#10b981', frustrated: '#dc2626', content: '#059669',
+                worried: '#7c3aed'
+            };
+            
+            const sorted = Object.entries(emotions).sort((a, b) => b[1] - a[1]);
+            
+            container.innerHTML = sorted.map(([emotion, count]) => {
+                const percentage = (count / total * 100).toFixed(1);
+                const color = emotionColors[emotion] || '#6366f1';
+                return `
+                    <div class="emotion-bar">
+                        <div class="emotion-bar-label">
+                            <span>${emotion.charAt(0).toUpperCase() + emotion.slice(1)}</span>
+                            <span>${count} (${percentage}%)</span>
+                        </div>
+                        <div class="emotion-bar-fill" style="width: ${percentage}%; background: ${color};">
+                            ${percentage}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function displayRecords(records) {
+            const container = document.getElementById('recordsList');
+            
+            if (!records || records.length === 0) {
+                container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">No records found</div>';
+                return;
+            }
+            
+            container.innerHTML = records.map(record => {
+                const date = new Date(record.timestamp);
+                const timeStr = date.toLocaleTimeString();
+                const dateStr = date.toLocaleDateString();
+                
+                return `
+                    <div class="table-row">
+                        <div>#${record.id || 'N/A'}</div>
+                        <div>
+                            <span class="type-badge type-${record.type}">${record.type}</span>
+                        </div>
+                        <div>
+                            <span class="emotion-badge" style="background: var(--${record.emotion})20; color: var(--${record.emotion});">
+                                ${record.emotion}
+                            </span>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.9rem; margin-bottom: 0.3rem;">${(record.confidence * 100).toFixed(1)}%</div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: ${record.confidence * 100}%"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                            ${record.text}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">
+                            ${dateStr}<br>${timeStr}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Load data on page load
+        loadData();
+        
+        // Refresh every 5 seconds for real-time updates
+        setInterval(loadData, 5000);
+    </script>
+</body>
+</html>
