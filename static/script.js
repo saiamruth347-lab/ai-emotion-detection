@@ -220,15 +220,24 @@ function displayResults(data) {
     // Update emotions breakdown
     displayEmotionsChart(all_emotions);
     
-    // Update sentiment analysis
-    const polarityValue = document.getElementById('polarityValue');
-    const subjectivityValue = document.getElementById('subjectivityValue');
-    
-    polarityValue.textContent = sentiment.polarity.toFixed(2);
-    polarityValue.style.color = sentiment.polarity > 0 ? '#10b981' : sentiment.polarity < 0 ? '#ef4444' : '#9ca3af';
-    
-    subjectivityValue.textContent = sentiment.subjectivity.toFixed(2);
-    subjectivityValue.style.color = sentiment.subjectivity > 0.5 ? '#8b5cf6' : '#3b82f6';
+    // Update sentiment analysis (only for text mode)
+    const sentimentSection = document.querySelector('.sentiment-info');
+    if (sentiment && sentiment.polarity !== undefined && sentiment.subjectivity !== undefined) {
+        // Show sentiment section for text analysis
+        if (sentimentSection) sentimentSection.style.display = 'block';
+        
+        const polarityValue = document.getElementById('polarityValue');
+        const subjectivityValue = document.getElementById('subjectivityValue');
+        
+        polarityValue.textContent = sentiment.polarity.toFixed(2);
+        polarityValue.style.color = sentiment.polarity > 0 ? '#10b981' : sentiment.polarity < 0 ? '#ef4444' : '#9ca3af';
+        
+        subjectivityValue.textContent = sentiment.subjectivity.toFixed(2);
+        subjectivityValue.style.color = sentiment.subjectivity > 0.5 ? '#8b5cf6' : '#3b82f6';
+    } else {
+        // Hide sentiment section for facial detection
+        if (sentimentSection) sentimentSection.style.display = 'none';
+    }
 }
 
 // Display emotions breakdown chart
