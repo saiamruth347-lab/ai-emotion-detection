@@ -1,0 +1,13 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "pip install -r requirements-light.txt && python -c 'import nltk; nltk.download(\"punkt\"); nltk.download(\"punkt_tab\")'"
+  },
+  "deploy": {
+    "startCommand": "gunicorn --workers=1 --threads=1 --timeout=120 --max-requests=100 --max-requests-jitter=10 --bind=0.0.0.0:$PORT app:app",
+    "healthcheckPath": "/health",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}
