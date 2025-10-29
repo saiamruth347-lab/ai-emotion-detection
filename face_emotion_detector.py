@@ -207,78 +207,82 @@ class FaceEmotionDetector:
             'neutral': 0.0
         }
         
-        # Map happy -> happy, excited, content
+        # Map happy -> happy, excited, content (BOOSTED)
         if 'happy' in normalized:
             happy_score = normalized['happy']
-            if happy_score > 0.7:  # Very happy = excited
-                enhanced['excited'] = happy_score * 0.6
-                enhanced['happy'] = happy_score * 0.4
-            elif happy_score > 0.4:  # Moderately happy
-                enhanced['happy'] = happy_score * 0.7
-                enhanced['content'] = happy_score * 0.3
+            if happy_score > 0.5:  # Very happy = excited (lowered threshold)
+                enhanced['excited'] = happy_score * 0.7
+                enhanced['happy'] = happy_score * 0.5
+            elif happy_score > 0.2:  # Moderately happy (lowered threshold)
+                enhanced['happy'] = happy_score * 0.9
+                enhanced['content'] = happy_score * 0.4
             else:  # Slightly happy = content
-                enhanced['content'] = happy_score * 0.6
-                enhanced['happy'] = happy_score * 0.4
+                enhanced['content'] = happy_score * 0.7
+                enhanced['happy'] = happy_score * 0.5
         
-        # Map sad -> sad, tired, bored
+        # Map sad -> sad, tired, bored (BOOSTED)
         if 'sad' in normalized:
             sad_score = normalized['sad']
-            if sad_score > 0.6:  # Very sad
+            if sad_score > 0.4:  # Very sad (lowered threshold)
+                enhanced['sad'] = sad_score * 1.0
+                enhanced['tired'] = sad_score * 0.3
+            elif sad_score > 0.2:  # Moderately sad (lowered threshold)
                 enhanced['sad'] = sad_score * 0.8
-                enhanced['tired'] = sad_score * 0.2
-            elif sad_score > 0.3:  # Moderately sad
-                enhanced['sad'] = sad_score * 0.6
-                enhanced['bored'] = sad_score * 0.4
+                enhanced['bored'] = sad_score * 0.5
             else:  # Slightly sad
-                enhanced['tired'] = sad_score * 0.5
-                enhanced['sad'] = sad_score * 0.5
+                enhanced['tired'] = sad_score * 0.6
+                enhanced['sad'] = sad_score * 0.6
         
-        # Map angry -> angry, frustrated
+        # Map angry -> angry, frustrated (BOOSTED)
         if 'angry' in normalized:
             angry_score = normalized['angry']
-            if angry_score > 0.6:  # Very angry
-                enhanced['angry'] = angry_score * 0.8
-                enhanced['frustrated'] = angry_score * 0.2
+            if angry_score > 0.4:  # Very angry (lowered threshold)
+                enhanced['angry'] = angry_score * 1.0
+                enhanced['frustrated'] = angry_score * 0.3
             else:  # Moderately angry = frustrated
-                enhanced['frustrated'] = angry_score * 0.6
-                enhanced['angry'] = angry_score * 0.4
+                enhanced['frustrated'] = angry_score * 0.8
+                enhanced['angry'] = angry_score * 0.6
         
-        # Map fear -> fear, anxious, worried
+        # Map fear -> fear, anxious, worried (BOOSTED)
         if 'fear' in normalized:
             fear_score = normalized['fear']
-            if fear_score > 0.6:  # Very fearful
-                enhanced['fear'] = fear_score * 0.7
-                enhanced['anxious'] = fear_score * 0.3
-            elif fear_score > 0.3:  # Moderately fearful = anxious
-                enhanced['anxious'] = fear_score * 0.6
-                enhanced['worried'] = fear_score * 0.4
+            if fear_score > 0.4:  # Very fearful (lowered threshold)
+                enhanced['fear'] = fear_score * 0.9
+                enhanced['anxious'] = fear_score * 0.4
+            elif fear_score > 0.2:  # Moderately fearful = anxious (lowered threshold)
+                enhanced['anxious'] = fear_score * 0.8
+                enhanced['worried'] = fear_score * 0.5
             else:  # Slightly fearful = worried
-                enhanced['worried'] = fear_score * 0.7
-                enhanced['fear'] = fear_score * 0.3
+                enhanced['worried'] = fear_score * 0.8
+                enhanced['fear'] = fear_score * 0.4
         
-        # Map surprise -> surprise, confused
+        # Map surprise -> surprise, confused (BOOSTED)
         if 'surprise' in normalized:
             surprise_score = normalized['surprise']
-            if surprise_score > 0.5:  # Clear surprise
-                enhanced['surprise'] = surprise_score * 0.8
-                enhanced['confused'] = surprise_score * 0.2
+            if surprise_score > 0.3:  # Clear surprise (lowered threshold)
+                enhanced['surprise'] = surprise_score * 1.0
+                enhanced['confused'] = surprise_score * 0.3
             else:  # Mild surprise = confused
-                enhanced['confused'] = surprise_score * 0.6
-                enhanced['surprise'] = surprise_score * 0.4
+                enhanced['confused'] = surprise_score * 0.8
+                enhanced['surprise'] = surprise_score * 0.6
         
-        # Map disgust directly
+        # Map disgust directly (BOOSTED)
         if 'disgust' in normalized:
-            enhanced['disgust'] = normalized['disgust']
+            enhanced['disgust'] = normalized['disgust'] * 1.2  # Boost disgust detection
         
-        # Map neutral -> neutral, calm
+        # Map neutral -> neutral, calm (REDUCED to allow other emotions to show)
         if 'neutral' in normalized:
             neutral_score = normalized['neutral']
-            if neutral_score > 0.6:  # Very neutral
-                enhanced['neutral'] = neutral_score * 0.7
-                enhanced['calm'] = neutral_score * 0.3
-            else:  # Slightly neutral
-                enhanced['calm'] = neutral_score * 0.5
+            # Only use neutral if it's VERY dominant (>0.8)
+            if neutral_score > 0.8:  # Very neutral
                 enhanced['neutral'] = neutral_score * 0.5
+                enhanced['calm'] = neutral_score * 0.3
+            elif neutral_score > 0.6:  # Moderately neutral = calm
+                enhanced['calm'] = neutral_score * 0.4
+                enhanced['neutral'] = neutral_score * 0.2
+            else:  # Low neutral - distribute to calm minimally
+                enhanced['calm'] = neutral_score * 0.3
+                enhanced['neutral'] = neutral_score * 0.1
         
         # Normalize to sum to 1.0
         total_enhanced = sum(enhanced.values())
