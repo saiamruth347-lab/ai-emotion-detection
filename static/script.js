@@ -222,18 +222,22 @@ function displayResults(data) {
     
     // Update sentiment analysis (only for text mode)
     const sentimentSection = document.querySelector('.sentiment-info');
+    const polarityValue = document.getElementById('polarityValue');
+    const subjectivityValue = document.getElementById('subjectivityValue');
+    
     if (sentiment && sentiment.polarity !== undefined && sentiment.subjectivity !== undefined) {
         // Show sentiment section for text analysis
         if (sentimentSection) sentimentSection.style.display = 'block';
         
-        const polarityValue = document.getElementById('polarityValue');
-        const subjectivityValue = document.getElementById('subjectivityValue');
+        if (polarityValue) {
+            polarityValue.textContent = sentiment.polarity.toFixed(2);
+            polarityValue.style.color = sentiment.polarity > 0 ? '#10b981' : sentiment.polarity < 0 ? '#ef4444' : '#9ca3af';
+        }
         
-        polarityValue.textContent = sentiment.polarity.toFixed(2);
-        polarityValue.style.color = sentiment.polarity > 0 ? '#10b981' : sentiment.polarity < 0 ? '#ef4444' : '#9ca3af';
-        
-        subjectivityValue.textContent = sentiment.subjectivity.toFixed(2);
-        subjectivityValue.style.color = sentiment.subjectivity > 0.5 ? '#8b5cf6' : '#3b82f6';
+        if (subjectivityValue) {
+            subjectivityValue.textContent = sentiment.subjectivity.toFixed(2);
+            subjectivityValue.style.color = sentiment.subjectivity > 0.5 ? '#8b5cf6' : '#3b82f6';
+        }
     } else {
         // Hide sentiment section for facial detection
         if (sentimentSection) sentimentSection.style.display = 'none';
