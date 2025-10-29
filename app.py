@@ -25,6 +25,15 @@ def index():
     """Serve the main page"""
     return render_template('index.html')
 
+@app.route('/health')
+def health():
+    """Health check endpoint for deployment platforms"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'AI Emotion Detection',
+        'version': '1.0'
+    }), 200
+
 @app.route('/camera-test')
 def camera_test():
     """Serve the camera test page"""
